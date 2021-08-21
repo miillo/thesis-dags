@@ -1,0 +1,77 @@
+---
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: "alignment-{{ ds }}-{{ task_instance.try_number }}-e81b0dc2"
+  namespace: default
+spec:
+  type: Scala
+  mode: cluster
+  image: "eu.gcr.io/tbd-2021l-125/spark:v3.1.1-2.12" # "eu.gcr.io/tbd-2021l-123/spark:v3.1.1-2.12"
+  imagePullPolicy: Always
+  sparkConf:
+    "spark.ui.prometheus.enabled": "true"
+    "spark.executor.processTreeMetrics.enabled": "false"
+    "spark.eventLog.logStageExecutorMetrics": "true"
+    "spark.kubernetes.driver.annotation.prometheus.io/scrape": "true"
+    "spark.kubernetes.driver.annotation.prometheus.io/path": "/metrics/prometheus/"
+    "spark.kubernetes.driver.annotation.prometheus.io/port": "4040"
+    "spark.kubernetes.driver.service.annotation.prometheus.io/scrape": "true"
+    "spark.kubernetes.driver.service.annotation.prometheus.io/path": "/metrics/executors/prometheus/"
+    "spark.kubernetes.driver.service.annotation.prometheus.io/port": "4040"
+  hadoopConf:
+    "fs.gs.project.id": "tbd-2021l-125"
+    "fs.gs.system.bucket": "tbd-2021l-125-jars-storage"
+    "fs.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem"
+    "fs.AbstractFileSystem.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem"
+    "google.cloud.auth.service.account.enable": "true"
+    "google.cloud.auth.service.account.json.keyfile": "/mnt/secrets/credentials.json"
+  mainClass: org.biodatageeks.AlignmentJob
+  mainApplicationFile: "gs://tbd-2021l-125-jars-storage/seqtender-assembly-0.3.0.jar"
+  arguments:
+    - "10.28.6.236:9091" #prometheus-pushgateway IP:Endpoint (sparkMeasure)
+    - "gs://tbd-2021l-125-test-data/fastq/mother.fastq"
+    - "gs://tbd-2021l-125-test-data/ref/ref.fasta"
+    - "bwa mem -p /home/ref/ref.fasta - | samtools fixmate -m - - | samtools sort  | samtools markdup -r -S - -  | samtools addreplacerg  -r \"ID:S1\" -r \"SM:S1\"  -r \"PL:ILLUMINA\" - | samtools view -b -"
+    - "gs://tbd-2021l-125-test-data/bam/mother10.bam"
+  sparkVersion: "3.1.1"
+  deps:
+    jars:
+      - "local:///prometheus/jmx_prometheus_javaagent-0.11.0.jar"
+    packages:
+      - "ch.cern.sparkmeasure:spark-measure_2.12:0.17"
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    coreRequest: "400m"
+    coreLimit: "1200m"
+    memory: "512m"
+    labels:
+      version: 3.1.1
+      sparkSvc: driver
+    serviceAccount: spark
+    secrets:
+      - name: "spark-jobs-sa-credentials"
+        path: "/mnt/secrets"
+        secretType: GCPServiceAccount
+  executor:
+    cores: 1
+    coreRequest: "500m"
+    coreLimit: "1200m"
+    instances: 2
+    memory: "512m"
+    labels:
+      version: 3.1.1
+    serviceAccount: spark
+    secrets:
+      - name: "spark-jobs-sa-credentials"
+        path: "/mnt/secrets"
+        secretType: GCPServiceAccount
+  monitoring:
+    exposeDriverMetrics: true
+    exposeExecutorMetrics: true
+    prometheus:
+      jmxExporterJar: "/prometheus/jmx_prometheus_javaagent-0.11.0.jar"
+      port: 8090
+      portName: "tcp-prometheus"
