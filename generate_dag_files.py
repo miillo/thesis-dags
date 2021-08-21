@@ -3,7 +3,7 @@ import fileinput
 from csv import DictReader
 import uuid
 
-push_gateway_address = "10.27.249.163:9091"
+push_gateway_address = "10.28.6.236:9091"
 config_filepath = 'resources/dag_config/dag_config.csv'
 dag_template_filename = 'ngs_pipeline_template.py'
 alignment_template_filename = 'resources/seqtender/alignment_template.yaml'
