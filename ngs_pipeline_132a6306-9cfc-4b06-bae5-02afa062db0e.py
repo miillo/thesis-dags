@@ -11,7 +11,7 @@ import time
 
 # fixme https://github.com/apache/airflow/issues/16290 - after solving retries shouldn't be necessary
 
-dag_run_uuid = "d02cf34f-bb22-4a0b-b27b-760185fa9479"
+dag_run_uuid = "132a6306-9cfc-4b06-bae5-02afa062db0e"
 push_gateway_address = "10.27.248.209:9091"
 
 default_args = {
@@ -24,7 +24,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 with DAG(
-    dag_id="ngs-pipeline-d02cf34f-bb22-4a0b-b27b-760185fa9479",
+    dag_id="ngs-pipeline-132a6306-9cfc-4b06-bae5-02afa062db0e",
     default_args=default_args,
     description='NGS pipeline',
     schedule_interval=None,
@@ -42,7 +42,7 @@ with DAG(
         registry = CollectorRegistry()
         labelnames = ['executor_instances', 'executor_memory', 'driver_memory', 'machine_type'] + ["job_uuid"]
         g = Gauge('k8s_cluster_setup', 'GKE cluster setup', labelnames=labelnames, registry=registry)
-        g.labels(executor_instances="1",executor_memory="7000m",driver_memory="512m",machine_type="e2-standard-4", job_uuid=dag_run_uuid).set(time.time())
+        g.labels(executor_instances="1",executor_memory="30000m",driver_memory="512m",machine_type="e2-standard-4", job_uuid=dag_run_uuid).set(time.time())
         push_to_gateway(push_gateway_address, job=str(dag_run_uuid), registry=registry)
 
 
@@ -57,7 +57,7 @@ with DAG(
         task_id='alignment',
         namespace='default',
         kubernetes_conn_id="kubernetes_default",
-        application_file="resources/seqtender/alignment-d02cf34f-bb22-4a0b-b27b-760185fa9479.yaml",
+        application_file="resources/seqtender/alignment-132a6306-9cfc-4b06-bae5-02afa062db0e.yaml",
         do_xcom_push=True,
         retries=8,
         retry_delay=timedelta(seconds=30),
@@ -96,7 +96,7 @@ with DAG(
         task_id='annotation',
         namespace='default',
         kubernetes_conn_id="kubernetes_default",
-        application_file="resources/seqtender/annotation-d02cf34f-bb22-4a0b-b27b-760185fa9479.yaml",
+        application_file="resources/seqtender/annotation-132a6306-9cfc-4b06-bae5-02afa062db0e.yaml",
         do_xcom_push=True,
         retries=8,
         retry_delay=timedelta(seconds=30),
