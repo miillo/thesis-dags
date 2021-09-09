@@ -1,2 +1,12 @@
 executor_instances,executor_memory,driver_memory,machine_type
-1,1024m,1024m,e2-standard-4
+2,512m,512m,e2-standard-4
+4,512m,512m,e2-standard-4
+2,550m,600m,e2-standard-4
+4,550m,600m,e2-standard-4
+2,600m,750m,e2-standard-4
+6,600m,750m,e2-standard-4
+2,512m,1024m,e2-standard-4
+5,1024m,1024m,e2-standard-4
+2,600m,512m,e2-standard-4
+5,700m,1024m,e2-standard-4
+20,1024m,1024m,e2-standard-4
